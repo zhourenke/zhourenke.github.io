@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>雷达图示例</title>
+    <style>
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+      #chart-container {
+        width: 100vmin; /* vmin 取视口宽度和高度中较小的那个 */
+        height: 100vmin;
+      }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  </head>
+  <body>
+    <div id="chart-container">
+      <canvas id="radarChart"></canvas>
+    </div>
+    <script>
+      const ctx = document.getElementById("radarChart").getContext("2d");
+
+      const data = {
+        labels: ["协调", "读谱", "爆发", "糊功", "指法", "底力"],
+        datasets: [
+          {
+            label: "新人类进度",
+            data: [9, 10, 9, 11, 8, 7],
+            backgroundColor: "rgba(0, 200, 200, 0.2)",
+            borderColor: "rgba(0, 200, 200, 1)",
+            borderWidth: 2,
+          },
+        ],
+      };
+
+      const options = {
+    maintainAspectRatio: false, // 禁用默认的宽高比保持
+    scales: {
+        r: {
+            angleLines: {
+                display: true
+            },
+            suggestedMin: 0,
+            suggestedMax: 14,
+            pointLabels: {
+                font: {
+                    size: 16 // 设置标签字体大小
+                },
+                // color: 'rgba(0, 0, 0, 0.8)' // 设置标签字体颜色
+            },
+            ticks: {
+                display: false // 隐藏刻度数字
+            }
+        }
+    }
+};
+
+const radarChart = new Chart(ctx, {
+    type: 'radar',
+    data: data,
+    options: options
+});
+    </script>
+  </body>
+</html>

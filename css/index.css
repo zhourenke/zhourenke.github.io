@@ -1,0 +1,19 @@
+/* 大标题 */
+.title h1 {
+    text-align: center;
+    margin: 20px;
+}
+
+/* 小标题 */
+.title h3 {
+    text-align: right;
+    margin-right: 30px;
+    margin-bottom: 40px;
+}
+
+/* 跳转链接 */
+
+.jumpers li {
+    text-align: center;
+    margin: 20px;
+}

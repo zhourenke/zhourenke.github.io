@@ -1,0 +1,10 @@
+* {
+    color: #333;
+    text-decoration: none;
+    margin: 0;
+    padding: 0;
+}
+
+li {
+    list-style: none;
+}

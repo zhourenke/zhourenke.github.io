@@ -1,0 +1,172 @@
+@font-face {
+    font-family: "XHei Intel";
+    src: url(XHei-Intel-subset.ttf);
+}
+
+/* 清除并设置默认样式 */
+* {
+    padding: 0;
+    margin: 0;
+    color: #fff;
+    font-family: "XHei Intel";
+}
+
+a {
+    text-decoration: none;
+}
+
+input {
+    background-color: transparent;
+    border-style: none;
+    outline:none;
+}
+
+button {
+    background-color: transparent;
+    border-style: none;
+}
+
+/* 切换带 .flex 的显示模式 */
+.flex {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+/* 背景 */
+.bg {
+    flex-direction: column;
+    height: 100vh;
+    background-image: url(bg.png);
+    background-position: center center;
+    background-repeat: no-repeat;
+    background-size: 100%;
+    background-attachment: fixed;
+    background-color: rgb(56,120,184);
+}
+
+/* 语言切换按钮 */
+.lang {
+    padding: 2vh 3vh;
+    text-align: right;
+
+    font-size: 2.5vh;
+}
+
+.lang .link:hover {
+    text-decoration: underline;
+}
+
+/* 登录框 */
+.login {
+    width: 60vh;
+    padding: 3vh 5vh;
+    margin: 24vh auto;
+    box-sizing: border-box;
+    background-color: #333333bf;
+    flex-wrap: wrap;
+
+    box-shadow: 0vh 1vh 2vh 0 #333333bf;
+    border-radius: 1.6vh;
+}
+
+/* 水印图标 */
+.login .logo .pic {
+    display: block;
+    width: 100%;
+    margin: -1vh auto 4vh;
+}
+
+/* 输入框 */
+.input .account,
+.input .password {
+    height: 5vh;
+    width: 50vh;
+    margin: auto;
+
+    font-size: 2.3vh;
+    caret-color: white;
+}
+
+.input .password {
+    flex: 1;
+}
+
+.input .account::-webkit-input-placeholder,
+.input .password::-webkit-input-placeholder {
+    color: #ddd;
+}
+
+/* 忘记密码 */
+.input .forgetPassword {
+    margin: auto;
+
+    font-size: 2.3vh;
+}
+
+/* 输入框下方线条 */
+.input .line {
+    border: 0.1vh solid;
+    margin-bottom: 5vh;
+}
+
+/* 登录选项框 */
+.massage {
+    margin-bottom: 2vh;
+}
+
+/* 登录按钮 */
+button.sendMassage {
+    height: 7vh;
+    width: 30vh;
+    background-color: #57a0f4;
+    cursor: pointer;
+
+    font-size: 2.7vh;
+    border-radius: 1vh;
+}
+
+button.sendMassage:active {
+    border: 2px solid #333;
+    background-color: #204d74;
+}
+
+/* 记住我框 */
+.rememberMe {
+    margin: auto;
+    /* align-items: center; */
+}
+
+/* 隐藏默认选择框 */
+.rememberMe input {
+    display: none;
+}
+
+/* 装饰性选择框 */
+.rememberMe .box {
+    display: inline-block;
+    width: 2vh;
+    height: 2vh;
+    padding: 0.4vh;
+
+    color: #0000;
+    font-size: 1.8vh;
+    line-height: 2.28vh;
+    
+    cursor: pointer;
+    border-radius: 0.6vh;
+    border: 0.1vh solid #fff;
+}
+
+.rememberMe input:checked+label {
+    background-color: #57a0f4;
+
+    color: #fff;
+}
+
+/* 记住我文本 */
+.rememberMe .text {
+    padding-left: 1vh;
+    font-size: 2.3vh;
+    line-height: 3vh;
+    cursor: pointer;
+}
