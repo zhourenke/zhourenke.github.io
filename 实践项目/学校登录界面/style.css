@@ -39,17 +39,17 @@ button {
     background-image: url(bg.png);
     background-position: center center;
     background-repeat: no-repeat;
-    background-size: 100%;
+    background-size: 100vw;
     background-attachment: fixed;
     background-color: rgb(56,120,184);
 }
 
 /* 语言切换按钮 */
 .lang {
-    padding: 2vh 3vh;
+    padding: 2vmin 3vmin;
     text-align: right;
 
-    font-size: 2.5vh;
+    font-size: 2.7vmin;
 }
 
 .lang .link:hover {
@@ -58,32 +58,32 @@ button {
 
 /* 登录框 */
 .login {
-    width: 60vh;
-    padding: 3vh 5vh;
-    margin: 24vh auto;
+    width: 60vmin;
+    padding: 3vmin 5vmin;
+    margin: 25vmin auto;
     box-sizing: border-box;
     background-color: #333333bf;
     flex-wrap: wrap;
 
-    box-shadow: 0vh 1vh 2vh 0 #333333bf;
-    border-radius: 1.6vh;
+    box-shadow: 0 1vmin 2vmin 0 #333333bf;
+    border-radius: 2vmin;
 }
 
 /* 水印图标 */
 .login .logo .pic {
     display: block;
     width: 100%;
-    margin: -1vh auto 4vh;
+    margin: -1vmin auto 4vmin;
 }
 
 /* 输入框 */
 .input .account,
 .input .password {
-    height: 5vh;
-    width: 50vh;
+    height: 5vmin;
+    width: 50vmin;
     margin: auto;
 
-    font-size: 2.3vh;
+    font-size: 2.3vmin;
     caret-color: white;
 }
 
@@ -100,33 +100,33 @@ button {
 .input .forgetPassword {
     margin: auto;
 
-    font-size: 2.3vh;
+    font-size: 2.3vmin;
 }
 
 /* 输入框下方线条 */
 .input .line {
-    border: 0.1vh solid;
-    margin-bottom: 5vh;
+    border: 0.1vmin solid;
+    margin-bottom: 5vmin;
 }
 
 /* 登录选项框 */
 .massage {
-    margin-bottom: 2vh;
+    margin-bottom: 2vmin;
 }
 
 /* 登录按钮 */
 button.sendMassage {
-    height: 7vh;
-    width: 30vh;
+    height: 7vmin;
+    width: 30vmin;
     background-color: #57a0f4;
     cursor: pointer;
 
-    font-size: 2.7vh;
-    border-radius: 1vh;
+    font-size: 2.7vmin;
+    border-radius: 1vmin;
 }
 
 button.sendMassage:active {
-    border: 2px solid #333;
+    border: 0.1vmin solid #333;
     background-color: #204d74;
 }
 
@@ -144,17 +144,17 @@ button.sendMassage:active {
 /* 装饰性选择框 */
 .rememberMe .box {
     display: inline-block;
-    width: 2vh;
-    height: 2vh;
-    padding: 0.4vh;
+    width: 2vmin;
+    height: 2vmin;
+    padding: 0.4vmin;
 
     color: #0000;
-    font-size: 1.8vh;
-    line-height: 2.28vh;
+    font-size: 1.8vmin;
+    line-height: 2.28vmin;
     
     cursor: pointer;
-    border-radius: 0.6vh;
-    border: 0.1vh solid #fff;
+    border-radius: 0.6vmin;
+    border: 0.1vmin solid #fff;
 }
 
 .rememberMe input:checked+label {
@@ -165,8 +165,8 @@ button.sendMassage:active {
 
 /* 记住我文本 */
 .rememberMe .text {
-    padding-left: 1vh;
-    font-size: 2.3vh;
-    line-height: 3vh;
+    padding-left: 1vmin;
+    font-size: 2.3vmin;
+    line-height: 3vmin;
     cursor: pointer;
 }
