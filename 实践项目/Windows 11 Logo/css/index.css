@@ -1,42 +1,55 @@
 .box {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-content: space-between;
-    width: 50vh;
-    height: 50vh;
-    margin: 25vh auto;
-    box-sizing: border-box;
-    /* background: linear-gradient(to bottom right, rgb(75,211,254), rgb(11,121,213)); */
-    background-origin: border-box;
-    background-clip: content-box;
-
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-content: space-between;
+  width: 50vh;
+  height: 50vh;
+  margin: 25vh auto;
+  box-sizing: border-box;
+  /* background: linear-gradient(to bottom right, rgb(75,211,254), rgb(11,121,213)); */
+  background-origin: border-box;
+  background-clip: content-box;
 }
 
 .box .kid {
-    width: 24vh;
-    height: 24vh;
-    box-sizing: border-box;
-    
-
+  width: 24vh;
+  height: 24vh;
+  box-sizing: border-box;
 }
 
 .box .tl.kid {
-    border-radius: 3vh 0 0 0;
-    background-image: linear-gradient(to bottom right, rgb(75,211,254), rgb(11,121,213)200%);
+  border-radius: 3vh 0 0 0;
+  background-image: linear-gradient(
+    to bottom right,
+    rgb(75, 211, 254),
+    rgb(11, 121, 213) 200%
+  );
 }
 
 .box .tr.kid {
-    border-radius: 0 3vh 0 0;
-    background-image: linear-gradient(to bottom right, rgb(75,211,254)-50%, rgb(11,121,213)150%);
+  border-radius: 0 3vh 0 0;
+  background-image: linear-gradient(
+    to bottom right,
+    rgb(75, 211, 254)-50%,
+    rgb(11, 121, 213) 150%
+  );
 }
 
 .box .bl.kid {
-    border-radius: 0 0 0 3vh;
-    background-image: linear-gradient(to bottom right, rgb(75,211,254)-50%, rgb(11,121,213)150%);
+  border-radius: 0 0 0 3vh;
+  background-image: linear-gradient(
+    to bottom right,
+    rgb(75, 211, 254)-50%,
+    rgb(11, 121, 213) 150%
+  );
 }
 
 .box .br.kid {
-    border-radius: 0 0 3vh 0;
-    background-image: linear-gradient(to bottom right, rgb(75,211,254)-100%, rgb(11,121,213));
+  border-radius: 0 0 3vh 0;
+  background-image: linear-gradient(
+    to bottom right,
+    rgb(75, 211, 254)-100%,
+    rgb(11, 121, 213)
+  );
 }
