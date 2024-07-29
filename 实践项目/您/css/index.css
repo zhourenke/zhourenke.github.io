@@ -1,0 +1,15 @@
+.bg {
+  display: flex;
+
+  width: 100vw;
+  height: 100vh;
+  justify-content: center;
+  align-items: center;
+  background-color: red;
+}
+.YOU {
+  font-size: 50vmin;
+  font-family: "Noto Sans SC", "黑体", sans-serif;
+  color: yellow;
+  cursor: not-allowed;
+}

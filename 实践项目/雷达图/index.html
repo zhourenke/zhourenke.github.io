@@ -37,38 +37,41 @@
             data: [9, 10, 9, 11, 8, 7],
             backgroundColor: "rgba(0, 200, 200, 0.2)",
             borderColor: "rgba(0, 200, 200, 1)",
-            borderWidth: 2,
+            borderWidth: 1,
           },
         ],
       };
 
       const options = {
-    maintainAspectRatio: false, // 禁用默认的宽高比保持
-    scales: {
-        r: {
+        // maintainAspectRatio: false, // 禁用默认的宽高比保持
+        scales: {
+          r: {
             angleLines: {
-                display: true
+              display: true,
             },
             suggestedMin: 0,
             suggestedMax: 14,
             pointLabels: {
-                font: {
-                    size: 16 // 设置标签字体大小
-                },
-                // color: 'rgba(0, 0, 0, 0.8)' // 设置标签字体颜色
+              font: {
+                size: 16, // 设置标签字体大小
+              },
+              // color: 'rgba(0, 0, 0, 0.8)' // 设置标签字体颜色
             },
             ticks: {
-                display: false // 隐藏刻度数字
-            }
-        }
-    }
-};
+              display: false, // 隐藏刻度数字
+            },
+            label: {
+              display: false, // 隐藏刻度数字
+            },
+          },
+        },
+      };
 
-const radarChart = new Chart(ctx, {
-    type: 'radar',
-    data: data,
-    options: options
-});
+      const radarChart = new Chart(ctx, {
+        type: "radar",
+        data: data,
+        options: options,
+      });
     </script>
   </body>
 </html>
