@@ -1,0 +1,15 @@
+* {
+  margin: 0;
+  padding: 0;
+
+  color: #444;
+  font-size: 28px;
+}
+
+ol + ul {
+  list-style: none;
+}
+
+a {
+  text-decoration: none;
+}
