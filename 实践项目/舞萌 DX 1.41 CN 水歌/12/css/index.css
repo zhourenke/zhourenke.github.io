@@ -1,0 +1,11 @@
+li {
+  display: flex;
+  align-items: center;
+}
+
+img {
+  margin: 40px 50px;
+  width: 300px;
+
+  border-radius: 32px;
+}
