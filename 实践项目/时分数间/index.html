@@ -19,6 +19,7 @@
             --ring-shadow: 0 0 0 1px rgba(0,0,0,0.05), 0 8px 30px rgba(0,0,0,0.08);
             --modal-shadow: 0 20px 50px rgba(0,0,0,0.12);
             --font-glow: none;
+            --calendar-icon-filter: none;
         }
 
         [data-theme="dark"] {
@@ -35,6 +36,7 @@
             --ring-shadow: 0 0 60px rgba(180,160,220,0.25), 0 0 150px rgba(180,160,220,0.12);
             --modal-shadow: 0 20px 50px rgba(200,200,220,0.2);
             --font-glow: 0 0 30px currentColor;
+            --calendar-icon-filter: invert(1);
         }
 
         * {
@@ -177,7 +179,7 @@
         .icon-btn:hover {
             border-color: var(--text-secondary);
             color: var(--text);
-            background: rgba(128,128,128,0.05);
+            background: rgba(128,128,128,0.5);
         }
 
         .settings-panel {
@@ -208,6 +210,10 @@
             color: var(--text-secondary);
             margin-bottom: 0.2rem;
             font-weight: 500;
+        }
+        
+        .settings-panel input[type="datetime-local"]::-webkit-calendar-picker-indicator {
+            filter: var(--calendar-icon-filter);
         }
 
         .settings-panel input[type="datetime-local"],
@@ -287,7 +293,6 @@
             border: none;
             padding: 0.2rem 0.4rem;
             font-family: sans-serif;
-            transition: color 0.2s;
             text-align: center;
         }
         .reset-link:hover {
@@ -590,14 +595,25 @@
                     }
                     let n = 1, den = 0;
                     const eps = 1e-9;
-                    while (true) {
+                    let found = false;
+                    while (n <= 50) {
                         const d = n * (1 - ratio) / ratio;
-                        if (d >= 1 - eps && d <= 1.4 + eps) { den = n + d; break; }
+                        if (d >= 1 - eps && d <= 1.4 + eps) {
+                            den = n + d;
+                            found = true;
+                            break;
+                        }
                         n++;
-                        if (n > 10000) { den = n + 1; break; }
                     }
-                    den = Math.round(den*10)/10;
-                    return { numerator: n, denominator: den, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: 2 };
+                    if (found) {
+                        den = Math.round(den*10)/10;
+                        return { numerator: n, denominator: den, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: 2 };
+                    } else {
+                        // 回退到阶段1：分子=1
+                        let denomFallback = totalHoursCalc / elapsedHours;
+                        denomFallback = Math.round(denomFallback*10)/10;
+                        return { numerator: 1, denominator: denomFallback, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: 1 };
+                    }
 
                 } else {
                     // --- 剩余模式 ---
@@ -617,17 +633,28 @@
                         return { numerator: '✓', denominator: '✓', elapsedHours, remainingHours: 0, totalHours: totalHoursCalc, ratio: 1, useDays, unitLabel, isComplete: true, stage: 2 };
                     }
                     if (remainingRatio >= 0.5) {
-                        // 剩余超过一半，进入 stage 2
+                        // 剩余超过一半，尝试 stage 2
                         let n = 1, den = 0;
                         const eps = 1e-9;
-                        while (true) {
+                        let found = false;
+                        while (n <= 50) {
                             const d = n * (1 - remainingRatio) / remainingRatio;
-                            if (d >= 1 - eps && d <= 1.4 + eps) { den = n + d; break; }
+                            if (d >= 1 - eps && d <= 1.4 + eps) {
+                                den = n + d;
+                                found = true;
+                                break;
+                            }
                             n++;
-                            if (n > 10000) { den = n + 1; break; }
                         }
-                        den = Math.round(den*10)/10;
-                        return { numerator: n, denominator: den, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 2 };
+                        if (found) {
+                            den = Math.round(den*10)/10;
+                            return { numerator: n, denominator: den, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 2 };
+                        } else {
+                            // 回退到阶段1
+                            let denomFallback = totalHoursCalc / remainingHours;
+                            denomFallback = Math.round(denomFallback*10)/10;
+                            return { numerator: 1, denominator: denomFallback, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 1 };
+                        }
                     } else {
                         // 剩余不足一半，进入 stage 1
                         let denom = totalHoursCalc / remainingHours;
