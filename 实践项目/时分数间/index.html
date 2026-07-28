@@ -188,7 +188,7 @@
             right: 20px;
             top: 50%;
             transform: translateY(-50%);
-            width: min(90vw, 280px);
+            width: min(90vw, 300px);
             background: var(--surface);
             border: 1px solid var(--line-color);
             border-radius: 20px;
@@ -216,7 +216,6 @@
         .settings-panel input::-webkit-calendar-picker-indicator {
             filter: var(--calendar-icon-filter);
         }
-        
         .settings-panel input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             filter: var(--calendar-icon-filter);
         }
@@ -401,6 +400,16 @@
         <label>分数字体垂直偏移 (px)</label>
         <input type="number" id="offsetInput" value="0" step="1" min="-50" max="50">
 
+        <label>计算逻辑</label>
+        <select id="fractionModeSelect">
+            <option value="legacy">动态小数分母（旧）</option>
+            <option value="bestFraction">最简分数逼近</option>
+        </select>
+        <div id="maxDenomWrapper" style="display: none;">
+            <label>最大分母</label>
+            <input type="number" id="maxDenomInput" min="2" max="1000" step="1" value="10">
+        </div>
+
         <button class="reset-link" id="btnReset">恢复默认</button>
         <div class="status-info" id="statusInfo">
             已过 0.0 天 / 总共 26.0 天 (0.0%)
@@ -432,6 +441,9 @@
             const weightInput = document.getElementById('weightInput');
             const offsetInput = document.getElementById('offsetInput');
             const fontFileInput = document.getElementById('fontFileInput');
+            const fractionModeSelect = document.getElementById('fractionModeSelect');
+            const maxDenomWrapper = document.getElementById('maxDenomWrapper');
+            const maxDenomInput = document.getElementById('maxDenomInput');
 
             let startTimestamp, endTimestamp, totalHours, useDays, totalUnits, unitLabel;
             let animationFrameId;
@@ -440,6 +452,8 @@
             let currentWeight = 400;
             let currentOffset = 0;
             let viewMode = 'elapsed'; // 'elapsed' | 'remaining'
+            let fractionMode = 'legacy'; // 'legacy' | 'bestFraction'
+            let maxDenom = 10;          // 最大分母
 
             let resetConfirmTimer = null;
             const RESET_TIMEOUT = 3000;
@@ -483,7 +497,9 @@
                     customFontUrl: customFontBlobUrl,
                     weight: currentWeight,
                     offset: currentOffset,
-                    viewMode: viewMode
+                    viewMode: viewMode,
+                    fractionMode: fractionMode,
+                    maxDenom: maxDenom
                 };
                 try { localStorage.setItem('timeFractionFull', JSON.stringify(data)); } catch(e){}
             }
@@ -505,6 +521,8 @@
                         currentWeight = data.weight || 400;
                         currentOffset = data.offset || 0;
                         viewMode = data.viewMode || 'elapsed';
+                        fractionMode = data.fractionMode || 'legacy';
+                        maxDenom = data.maxDenom || 10;
                     } else {
                         const ds = getDefaultStart(); startTimestamp = ds.getTime();
                         const de = getDefaultEnd(); endTimestamp = de.getTime();
@@ -565,6 +583,40 @@
                 }
                 weightInput.value = currentWeight;
                 offsetInput.value = currentOffset;
+                fractionModeSelect.value = fractionMode;
+                maxDenomWrapper.style.display = fractionMode === 'bestFraction' ? 'block' : 'none';
+                maxDenomInput.value = maxDenom;
+            }
+
+            // 辅助：最大公约数
+            function gcd(a, b) {
+                while (b) { [a, b] = [b, a % b]; }
+                return a;
+            }
+
+            // 新逻辑：找到分母 ≤ maxDenom 的最简分数逼近 ratio
+            function findBestFraction(ratio, maxDenom) {
+                if (ratio <= 0) return { numerator: 0, denominator: 1 };
+                if (ratio >= 1) return { numerator: 1, denominator: 1 };
+                let bestNum = 1, bestDen = 1;
+                let bestDiff = Infinity;
+                for (let den = 1; den <= maxDenom; den++) {
+                    const exactNum = ratio * den;
+                    // 尝试向下取整和向上取整
+                    const nums = [Math.floor(exactNum), Math.ceil(exactNum)];
+                    for (const num of nums) {
+                        if (num < 0 || num > den) continue;
+                        if (gcd(num, den) !== 1) continue;
+                        const diff = Math.abs(num / den - ratio);
+                        if (diff < bestDiff - 1e-12 ||
+                            (Math.abs(diff - bestDiff) < 1e-12 && den < bestDen)) {
+                            bestDiff = diff;
+                            bestNum = num;
+                            bestDen = den;
+                        }
+                    }
+                }
+                return { numerator: bestNum, denominator: bestDen };
             }
 
             function computeFraction() {
@@ -576,7 +628,6 @@
                 const totalUnitsRounded = Math.round(totalUnitsCalc*10)/10;
 
                 if (viewMode === 'elapsed') {
-                    // --- 已过模式（原逻辑） ---
                     if (elapsedHours < 1) {
                         return {
                             numerator: 0, denominator: totalUnitsRounded,
@@ -588,40 +639,42 @@
                     }
                     const ratio = Math.min(1, elapsedHours / totalHoursCalc);
                     const isComplete = now >= endTimestamp || ratio >= 1;
-                    const denomCheck = totalHoursCalc / elapsedHours;
 
-                    if (denomCheck > 2 && !isComplete && ratio < 0.5) {
+                    if (isComplete || ratio >= 1) {
+                        return { numerator: '✓', denominator: '✓', elapsedHours, totalHours: totalHoursCalc, ratio: 1, useDays, unitLabel, isComplete: true, stage: 2 };
+                    }
+
+                    if (fractionMode === 'bestFraction') {
+                        const frac = findBestFraction(ratio, maxDenom);
+                        return { numerator: frac.numerator, denominator: frac.denominator, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: (ratio < 0.5 ? 1 : 2) };
+                    }
+
+                    // 旧逻辑
+                    const denomCheck = totalHoursCalc / elapsedHours;
+                    if (denomCheck > 2 && ratio < 0.5) {
                         let denom = totalHoursCalc / elapsedHours;
                         denom = Math.round(denom*10)/10;
                         return { numerator: 1, denominator: denom, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: 1 };
                     }
-                    if (isComplete || ratio >= 1) {
-                        return { numerator: '✓', denominator: '✓', elapsedHours, totalHours: totalHoursCalc, ratio: 1, useDays, unitLabel, isComplete: true, stage: 2 };
-                    }
+
                     let n = 1, den = 0;
                     const eps = 1e-9;
                     let found = false;
                     while (n <= 50) {
                         const d = n * (1 - ratio) / ratio;
-                        if (d >= 1 - eps && d <= 1.4 + eps) {
-                            den = n + d;
-                            found = true;
-                            break;
-                        }
+                        if (d >= 1 - eps && d <= 1.4 + eps) { den = n + d; found = true; break; }
                         n++;
                     }
                     if (found) {
                         den = Math.round(den*10)/10;
                         return { numerator: n, denominator: den, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: 2 };
                     } else {
-                        // 回退到阶段1：分子=1
                         let denomFallback = totalHoursCalc / elapsedHours;
                         denomFallback = Math.round(denomFallback*10)/10;
                         return { numerator: 1, denominator: denomFallback, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: 1 };
                     }
-
                 } else {
-                    // --- 剩余模式 ---
+                    // 剩余模式
                     const remainingHours = Math.max(0, totalHoursCalc - elapsedHours);
                     const remainingRatio = remainingHours / totalHoursCalc;
                     const isComplete = now >= endTimestamp || remainingRatio <= 0;
@@ -637,31 +690,30 @@
                     if (isComplete) {
                         return { numerator: '✓', denominator: '✓', elapsedHours, remainingHours: 0, totalHours: totalHoursCalc, ratio: 1, useDays, unitLabel, isComplete: true, stage: 2 };
                     }
+
+                    if (fractionMode === 'bestFraction') {
+                        const frac = findBestFraction(remainingRatio, maxDenom);
+                        return { numerator: frac.numerator, denominator: frac.denominator, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: (remainingRatio < 0.5 ? 1 : 2) };
+                    }
+
                     if (remainingRatio >= 0.5) {
-                        // 剩余超过一半，尝试 stage 2
                         let n = 1, den = 0;
                         const eps = 1e-9;
                         let found = false;
                         while (n <= 50) {
                             const d = n * (1 - remainingRatio) / remainingRatio;
-                            if (d >= 1 - eps && d <= 1.4 + eps) {
-                                den = n + d;
-                                found = true;
-                                break;
-                            }
+                            if (d >= 1 - eps && d <= 1.4 + eps) { den = n + d; found = true; break; }
                             n++;
                         }
                         if (found) {
                             den = Math.round(den*10)/10;
                             return { numerator: n, denominator: den, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 2 };
                         } else {
-                            // 回退到阶段1
                             let denomFallback = totalHoursCalc / remainingHours;
                             denomFallback = Math.round(denomFallback*10)/10;
                             return { numerator: 1, denominator: denomFallback, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 1 };
                         }
                     } else {
-                        // 剩余不足一半，进入 stage 1
                         let denom = totalHoursCalc / remainingHours;
                         denom = Math.round(denom*10)/10;
                         return { numerator: 1, denominator: denom, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 1 };
@@ -672,9 +724,13 @@
             function updateDisplay(result) {
                 const { numerator, denominator, elapsedHours, remainingHours, totalHours, ratio, useDays, unitLabel, isComplete, stage } = result;
                 numeratorEl.textContent = String(numerator);
-                denominatorEl.textContent = typeof denominator === 'number' ? denominator.toFixed(1) : String(denominator);
 
-                // 更新 motto
+                // 分母显示：若为整数则显示整数，否则一位小数
+                const denStr = typeof denominator === 'number' ?
+                    (Number.isInteger(denominator) ? String(denominator) : denominator.toFixed(1)) :
+                    String(denominator);
+                denominatorEl.textContent = denStr;
+
                 if (viewMode === 'elapsed') {
                     mottoEl.textContent = isComplete ? '已经解放啦' : '已经熬过了';
                 } else {
@@ -775,9 +831,7 @@
                 applyAllSettings();
             }
 
-            // 切换视角
             fractionWrapper.addEventListener('click', (e) => {
-                // 如果设置面板打开，不处理点击
                 if (settingsPanel.classList.contains('active')) return;
                 viewMode = viewMode === 'elapsed' ? 'remaining' : 'elapsed';
                 saveAll();
@@ -842,6 +896,21 @@
                 applyAllSettings();
             });
 
+            fractionModeSelect.addEventListener('change', ()=>{
+                fractionMode = fractionModeSelect.value;
+                maxDenomWrapper.style.display = fractionMode === 'bestFraction' ? 'block' : 'none';
+                applyAllSettings();
+            });
+
+            maxDenomInput.addEventListener('input', ()=>{
+                let val = parseInt(maxDenomInput.value,10);
+                if (isNaN(val) || val < 2) val = 2;
+                if (val > 1000) val = 1000;
+                maxDenom = val;
+                maxDenomInput.value = val;
+                applyAllSettings();
+            });
+
             function startResetCountdown() {
                 if (resetConfirmTimer) clearTimeout(resetConfirmTimer);
                 btnReset.textContent = '确认重置？';
@@ -863,6 +932,8 @@
                     currentWeight = 400;
                     currentOffset = 0;
                     viewMode = 'elapsed';
+                    fractionMode = 'legacy';
+                    maxDenom = 10;
                     updateCalculatedValues();
                     applyFontAndOffset();
                     saveAll();
