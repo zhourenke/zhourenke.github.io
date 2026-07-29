@@ -25,11 +25,6 @@
             --toggle-active-text: #333;
             --toggle-inactive-bg: transparent;
             --toggle-inactive-text: #555;
-            --glow-color-0: #95a5a6;
-            --glow-color-1: #95a5a6;
-            --glow-color-2: #d35400;
-            --glow-color-3: #e67e22;
-            --glow-color-done: #b8860b;
         }
 
         [data-theme="dark"] {
@@ -52,11 +47,6 @@
             --toggle-active-text: #ccc;
             --toggle-inactive-bg: transparent;
             --toggle-inactive-text: #aaa;
-            --glow-color-0: #6b7db3;
-            --glow-color-1: #8b9dc3;
-            --glow-color-2: #c49b6c;
-            --glow-color-3: #e08860;
-            --glow-color-done: #e0b860;
         }
 
         * {
@@ -809,18 +799,9 @@
                     mottoEl.textContent = isComplete ? '终于解放啦' : '距解放还有';
                 }
 
-                let glowColor;
-                if (isComplete) glowColor = 'var(--glow-color-done)';
-                else if (stage===0) glowColor = 'var(--glow-color-0)';
-                else if (stage===1) glowColor = interpolateColor('#95a5a6','#d35400', Math.min(1, ratio/0.5));
-                else glowColor = interpolateColor('#d35400','#b8860b', Math.min(1, (ratio-0.5)/0.5));
-
-                glowRing.style.boxShadow = isComplete ?
-                    `0 0 60px ${glowColor}44, 0 0 150px ${glowColor}22` :
-                    `0 0 1px ${glowColor}33, 0 8px 30px ${glowColor}22`;
-
-                numeratorEl.style.textShadow = isComplete ? `0 0 30px ${glowColor}` : 'none';
-                denominatorEl.style.textShadow = isComplete ? `0 0 30px ${glowColor}` : 'none';
+                glowRing.style.boxShadow = 'var(--ring-shadow)';
+                numeratorEl.style.textShadow = 'none';
+                denominatorEl.style.textShadow = 'none';
 
                 const fmt = v => Number(v).toFixed(1);
                 let html = '';
