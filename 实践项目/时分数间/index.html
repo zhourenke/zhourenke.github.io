@@ -21,6 +21,15 @@
             --font-glow: none;
             --btn-hover-bg: rgba(0,0,0,0.03);
             --calendar-icon-filter: invert(1) brightness(0.4);
+            --toggle-active-bg: #f8f8f8;
+            --toggle-active-text: #333;
+            --toggle-inactive-bg: transparent;
+            --toggle-inactive-text: #555;
+            --glow-color-0: #95a5a6;
+            --glow-color-1: #95a5a6;
+            --glow-color-2: #d35400;
+            --glow-color-3: #e67e22;
+            --glow-color-done: #b8860b;
         }
 
         [data-theme="dark"] {
@@ -39,6 +48,15 @@
             --font-glow: 0 0 30px currentColor;
             --btn-hover-bg: rgba(255,255,255,0.15);
             --calendar-icon-filter: invert(1) brightness(0.6);
+            --toggle-active-bg: #2a2a3a;
+            --toggle-active-text: #ddd;
+            --toggle-inactive-bg: transparent;
+            --toggle-inactive-text: #888;
+            --glow-color-0: #6b7db3;
+            --glow-color-1: #8b9dc3;
+            --glow-color-2: #c49b6c;
+            --glow-color-3: #e08860;
+            --glow-color-done: #e0b860;
         }
 
         * {
@@ -147,7 +165,6 @@
             margin-bottom: 1rem;
             user-select: none;
             pointer-events: none;
-            transition: opacity 0.3s ease;
         }
 
         .top-right-buttons {
@@ -186,8 +203,8 @@
         .settings-panel {
             position: fixed;
             right: 20px;
-            top: 50%;
-            transform: translateY(-50%);
+            top: calc(1.5rem + 66px);
+            max-height: calc(100vh - 1.5rem - 66px - 20px);
             width: min(90vw, 300px);
             background: var(--surface);
             border: 1px solid var(--line-color);
@@ -197,8 +214,8 @@
             padding: 1.8rem 1.4rem 1.4rem;
             font-family: sans-serif;
             cursor: default;
-            max-height: 90vh;
             overflow-y: auto;
+            scrollbar-gutter: stable;
             visibility: hidden;
         }
         .settings-panel.active {
@@ -209,20 +226,16 @@
             display: block;
             font-size: 0.75rem;
             color: var(--text-secondary);
-            margin-bottom: 0.2rem;
+            margin-bottom: 0.3rem;
             font-weight: 500;
         }
 
-        .settings-panel input::-webkit-calendar-picker-indicator {
-            filter: var(--calendar-icon-filter);
-        }
         .settings-panel input[type="datetime-local"]::-webkit-calendar-picker-indicator {
             filter: var(--calendar-icon-filter);
         }
 
         .settings-panel input[type="datetime-local"],
-        .settings-panel input[type="number"],
-        .settings-panel select {
+        .settings-panel input[type="number"] {
             width: 100%;
             padding: 0.55rem 0.6rem;
             border-radius: 8px;
@@ -237,18 +250,48 @@
             appearance: none;
         }
         .settings-panel input[type="datetime-local"]:focus,
-        .settings-panel input[type="number"]:focus,
-        .settings-panel select:focus {
+        .settings-panel input[type="number"]:focus {
             border-color: var(--accent);
             box-shadow: 0 0 0 2px rgba(230, 126, 34, 0.15);
         }
 
-        .settings-panel select {
+        .toggle-buttons {
+            display: flex;
+            gap: 0.4rem;
+            margin-bottom: 0.8rem;
+        }
+
+        .toggle-btn {
+            flex: 1;
+            padding: 0.5rem 0.4rem;
+            border-radius: 10px;
+            border: 1px solid var(--line-color);
+            background: var(--toggle-inactive-bg);
+            color: var(--toggle-inactive-text);
+            font-size: 0.75rem;
+            font-family: sans-serif;
             cursor: pointer;
+            text-align: center;
+            transition: background 0.15s, color 0.15s;
+            user-select: none;
+            white-space: nowrap;
+        }
+
+        .toggle-btn.active {
+            background: var(--toggle-active-bg);
+            color: var(--toggle-active-text);
+            font-weight: 500;
+            border-color: var(--accent);
+        }
+
+        .toggle-btn:hover:not(.active) {
+            background: var(--btn-hover-bg);
+            color: var(--text);
         }
 
         .file-input-wrapper {
             display: flex;
+            align-items: flex-start;
             gap: 0.4rem;
             margin-bottom: 0.8rem;
         }
@@ -272,6 +315,12 @@
             margin-top: -0.4rem;
             margin-bottom: 0.6rem;
             display: none;
+        }
+
+        .font-hint-text {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-top: 0.5rem;
         }
 
         .error-msg {
@@ -324,6 +373,19 @@
         }
         .panel-backdrop.active {
             display: block;
+        }
+
+        #customFontWrapper,
+        #maxDenomWrapper {
+            max-height: 0;
+            overflow: clip;
+            transition: max-height 0.3s ease, margin-bottom 0.3s ease;
+            margin-bottom: 0;
+        }
+        #customFontWrapper.active,
+        #maxDenomWrapper.active {
+            max-height: 120px;
+            margin-bottom: 0.8rem;
         }
 
         @media (max-width: 600px) {
@@ -383,14 +445,24 @@
         <input type="datetime-local" id="endInput" step="3600">
         <div class="error-msg" id="errorMsg">⚠ 结束时间必须晚于开始时间</div>
 
+        <label>分数显示逻辑</label>
+        <div class="toggle-buttons" id="fractionModeToggleGroup">
+            <button class="toggle-btn active" data-value="bestFraction">最简分数逼近</button>
+            <button class="toggle-btn" data-value="legacy">动态小数分母</button>
+        </div>
+        <div id="maxDenomWrapper">
+            <label>最大分母</label>
+            <input type="number" id="maxDenomInput" min="2" max="1000" step="1" value="10">
+        </div>
+
         <label>分数显示字体</label>
-        <select id="fontSelect">
-            <option value="system">系统默认</option>
-            <option value="custom">自定义…</option>
-        </select>
-        <div class="file-input-wrapper" id="customFontWrapper" style="display: none;">
+        <div class="toggle-buttons" id="fontToggleGroup">
+            <button class="toggle-btn active" data-value="system">系统默认</button>
+            <button class="toggle-btn" data-value="custom">自定义</button>
+        </div>
+        <div class="file-input-wrapper" id="customFontWrapper">
             <button id="chooseFontBtn">选择字体文件</button>
-            <span style="font-size:0.65rem; color:var(--text-dim); align-self:center;">.ttf / .otf</span>
+            <span class="font-hint-text">.ttf / .otf / .woff / .woff2</span>
         </div>
         <div class="custom-font-name" id="customFontName"></div>
 
@@ -400,19 +472,9 @@
         <label>分数字体垂直偏移 (px)</label>
         <input type="number" id="offsetInput" value="0" step="1" min="-50" max="50">
 
-        <label>计算逻辑</label>
-        <select id="fractionModeSelect">
-            <option value="legacy">动态小数分母（旧）</option>
-            <option value="bestFraction">最简分数逼近</option>
-        </select>
-        <div id="maxDenomWrapper" style="display: none;">
-            <label>最大分母</label>
-            <input type="number" id="maxDenomInput" min="2" max="1000" step="1" value="10">
-        </div>
-
         <button class="reset-link" id="btnReset">恢复默认</button>
         <div class="status-info" id="statusInfo">
-            已过 0.0 天 / 总共 26.0 天 (0.0%)
+            已过 0.0 天 / 总共 3.0 天 (0.0%)
         </div>
     </div>
 
@@ -420,6 +482,7 @@
 
     <script>
         (function() {
+            // DOM 元素
             const numeratorEl = document.getElementById('numeratorEl');
             const denominatorEl = document.getElementById('denominatorEl');
             const mottoEl = document.getElementById('mottoEl');
@@ -434,17 +497,20 @@
             const startInput = document.getElementById('startInput');
             const endInput = document.getElementById('endInput');
             const errorMsg = document.getElementById('errorMsg');
-            const fontSelect = document.getElementById('fontSelect');
+
+            const fontToggleGroup = document.getElementById('fontToggleGroup');
             const customFontWrapper = document.getElementById('customFontWrapper');
             const chooseFontBtn = document.getElementById('chooseFontBtn');
             const customFontName = document.getElementById('customFontName');
             const weightInput = document.getElementById('weightInput');
             const offsetInput = document.getElementById('offsetInput');
             const fontFileInput = document.getElementById('fontFileInput');
-            const fractionModeSelect = document.getElementById('fractionModeSelect');
+
+            const fractionModeToggleGroup = document.getElementById('fractionModeToggleGroup');
             const maxDenomWrapper = document.getElementById('maxDenomWrapper');
             const maxDenomInput = document.getElementById('maxDenomInput');
 
+            // 状态变量
             let startTimestamp, endTimestamp, totalHours, useDays, totalUnits, unitLabel;
             let animationFrameId;
             let currentFontFamily = 'system';
@@ -452,12 +518,13 @@
             let currentWeight = 400;
             let currentOffset = 0;
             let viewMode = 'elapsed'; // 'elapsed' | 'remaining'
-            let fractionMode = 'legacy'; // 'legacy' | 'bestFraction'
-            let maxDenom = 10;          // 最大分母
+            let fractionMode = 'bestFraction'; // 'bestFraction' | 'legacy'
+            let maxDenom = 10;
 
             let resetConfirmTimer = null;
             const RESET_TIMEOUT = 3000;
 
+            // 默认时间
             function getDefaultStart() {
                 const now = new Date();
                 now.setHours(8,0,0,0);
@@ -489,6 +556,7 @@
                 }
             }
 
+            // 持久化
             function saveAll() {
                 const data = {
                     start: startTimestamp,
@@ -521,7 +589,7 @@
                         currentWeight = data.weight || 400;
                         currentOffset = data.offset || 0;
                         viewMode = data.viewMode || 'elapsed';
-                        fractionMode = data.fractionMode || 'legacy';
+                        fractionMode = data.fractionMode || 'bestFraction';
                         maxDenom = data.maxDenom || 10;
                     } else {
                         const ds = getDefaultStart(); startTimestamp = ds.getTime();
@@ -534,6 +602,7 @@
                 updateCalculatedValues();
             }
 
+            // 字体与偏移应用
             function applyFontAndOffset() {
                 let fontFamily = '';
                 if (currentFontFamily === 'system') {
@@ -562,6 +631,7 @@
                 }
             }
 
+            // 统一设置更新与UI同步
             function applyAllSettings() {
                 updateCalculatedValues();
                 applyFontAndOffset();
@@ -573,28 +643,34 @@
             function updateInputs() {
                 startInput.value = toDatetimeLocalStr(new Date(startTimestamp));
                 endInput.value = toDatetimeLocalStr(new Date(endTimestamp));
-                fontSelect.value = currentFontFamily === 'custom' ? 'custom' : 'system';
-                customFontWrapper.style.display = currentFontFamily === 'custom' ? 'flex' : 'none';
+
+                fontToggleGroup.querySelectorAll('.toggle-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.value === currentFontFamily);
+                });
+                customFontWrapper.classList.toggle('active', currentFontFamily === 'custom');
                 if (currentFontFamily === 'custom' && customFontBlobUrl) {
                     customFontName.textContent = '已加载自定义字体';
                     customFontName.style.display = 'block';
                 } else {
                     customFontName.style.display = 'none';
                 }
+
                 weightInput.value = currentWeight;
                 offsetInput.value = currentOffset;
-                fractionModeSelect.value = fractionMode;
-                maxDenomWrapper.style.display = fractionMode === 'bestFraction' ? 'block' : 'none';
+
+                fractionModeToggleGroup.querySelectorAll('.toggle-btn').forEach(btn => {
+                    btn.classList.toggle('active', btn.dataset.value === fractionMode);
+                });
+                maxDenomWrapper.classList.toggle('active', fractionMode === 'bestFraction');
                 maxDenomInput.value = maxDenom;
             }
 
-            // 辅助：最大公约数
+            // 数学工具
             function gcd(a, b) {
                 while (b) { [a, b] = [b, a % b]; }
                 return a;
             }
 
-            // 新逻辑：找到分母 ≤ maxDenom 的最简分数逼近 ratio
             function findBestFraction(ratio, maxDenom) {
                 if (ratio <= 0) return { numerator: 0, denominator: 1 };
                 if (ratio >= 1) return { numerator: 1, denominator: 1 };
@@ -602,7 +678,6 @@
                 let bestDiff = Infinity;
                 for (let den = 1; den <= maxDenom; den++) {
                     const exactNum = ratio * den;
-                    // 尝试向下取整和向上取整
                     const nums = [Math.floor(exactNum), Math.ceil(exactNum)];
                     for (const num of nums) {
                         if (num < 0 || num > den) continue;
@@ -619,6 +694,32 @@
                 return { numerator: bestNum, denominator: bestDen };
             }
 
+            // 旧逻辑：分子1 + 小数分母 / 分子n分母n+小数
+            function computeLegacyFraction(ratio, totalHoursCalc, elapsedHours) {
+                const denomCheck = totalHoursCalc / elapsedHours;
+                if (denomCheck > 2 && ratio < 0.5) {
+                    let denom = totalHoursCalc / elapsedHours;
+                    denom = Math.round(denom*10)/10;
+                    return { numerator: 1, denominator: denom, stage: 1 };
+                }
+                let n = 1, den = 0;
+                const eps = 1e-9;
+                let found = false;
+                while (n <= 50) {
+                    const d = n * (1 - ratio) / ratio;
+                    if (d >= 1 - eps && d <= 1.4 + eps) { den = n + d; found = true; break; }
+                    n++;
+                }
+                if (found) {
+                    den = Math.round(den*10)/10;
+                    return { numerator: n, denominator: den, stage: 2 };
+                } else {
+                    let denomFallback = totalHoursCalc / elapsedHours;
+                    denomFallback = Math.round(denomFallback*10)/10;
+                    return { numerator: 1, denominator: denomFallback, stage: 1 };
+                }
+            }
+
             function computeFraction() {
                 const now = Date.now();
                 const elapsedMs = now - startTimestamp;
@@ -627,20 +728,30 @@
                 const totalUnitsCalc = useDays ? (totalHoursCalc/24) : totalHoursCalc;
                 const totalUnitsRounded = Math.round(totalUnitsCalc*10)/10;
 
+                const getBaseResult = (ratio, isComplete, elapsedH, remainingH) => ({
+                    numerator: 0,
+                    denominator: totalUnitsRounded,
+                    elapsedHours: elapsedH,
+                    remainingHours: remainingH,
+                    totalHours: totalHoursCalc,
+                    ratio,
+                    useDays,
+                    unitLabel,
+                    isComplete,
+                    stage: 0
+                });
+
                 if (viewMode === 'elapsed') {
                     if (elapsedHours < 1) {
-                        return {
-                            numerator: 0, denominator: totalUnitsRounded,
-                            elapsedHours, totalHours: totalHoursCalc,
-                            ratio: Math.max(0, Math.min(1, elapsedMs/(endTimestamp-startTimestamp))),
-                            useDays, unitLabel, isComplete: now >= endTimestamp,
-                            stage: 0
-                        };
+                        return getBaseResult(
+                            Math.max(0, Math.min(1, elapsedMs/(endTimestamp-startTimestamp))),
+                            now >= endTimestamp, elapsedHours, null
+                        );
                     }
                     const ratio = Math.min(1, elapsedHours / totalHoursCalc);
                     const isComplete = now >= endTimestamp || ratio >= 1;
 
-                    if (isComplete || ratio >= 1) {
+                    if (isComplete) {
                         return { numerator: '✓', denominator: '✓', elapsedHours, totalHours: totalHoursCalc, ratio: 1, useDays, unitLabel, isComplete: true, stage: 2 };
                     }
 
@@ -649,32 +760,10 @@
                         return { numerator: frac.numerator, denominator: frac.denominator, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: (ratio < 0.5 ? 1 : 2) };
                     }
 
-                    // 旧逻辑
-                    const denomCheck = totalHoursCalc / elapsedHours;
-                    if (denomCheck > 2 && ratio < 0.5) {
-                        let denom = totalHoursCalc / elapsedHours;
-                        denom = Math.round(denom*10)/10;
-                        return { numerator: 1, denominator: denom, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: 1 };
-                    }
+                    const legacy = computeLegacyFraction(ratio, totalHoursCalc, elapsedHours);
+                    return { ...legacy, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false };
 
-                    let n = 1, den = 0;
-                    const eps = 1e-9;
-                    let found = false;
-                    while (n <= 50) {
-                        const d = n * (1 - ratio) / ratio;
-                        if (d >= 1 - eps && d <= 1.4 + eps) { den = n + d; found = true; break; }
-                        n++;
-                    }
-                    if (found) {
-                        den = Math.round(den*10)/10;
-                        return { numerator: n, denominator: den, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: 2 };
-                    } else {
-                        let denomFallback = totalHoursCalc / elapsedHours;
-                        denomFallback = Math.round(denomFallback*10)/10;
-                        return { numerator: 1, denominator: denomFallback, elapsedHours, totalHours: totalHoursCalc, ratio, useDays, unitLabel, isComplete: false, stage: 1 };
-                    }
                 } else {
-                    // 剩余模式
                     const remainingHours = Math.max(0, totalHoursCalc - elapsedHours);
                     const remainingRatio = remainingHours / totalHoursCalc;
                     const isComplete = now >= endTimestamp || remainingRatio <= 0;
@@ -683,8 +772,7 @@
                         return {
                             numerator: 0, denominator: totalUnitsRounded,
                             elapsedHours, remainingHours, totalHours: totalHoursCalc,
-                            ratio: remainingRatio, useDays, unitLabel, isComplete: false,
-                            stage: 0
+                            ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 0
                         };
                     }
                     if (isComplete) {
@@ -696,28 +784,8 @@
                         return { numerator: frac.numerator, denominator: frac.denominator, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: (remainingRatio < 0.5 ? 1 : 2) };
                     }
 
-                    if (remainingRatio >= 0.5) {
-                        let n = 1, den = 0;
-                        const eps = 1e-9;
-                        let found = false;
-                        while (n <= 50) {
-                            const d = n * (1 - remainingRatio) / remainingRatio;
-                            if (d >= 1 - eps && d <= 1.4 + eps) { den = n + d; found = true; break; }
-                            n++;
-                        }
-                        if (found) {
-                            den = Math.round(den*10)/10;
-                            return { numerator: n, denominator: den, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 2 };
-                        } else {
-                            let denomFallback = totalHoursCalc / remainingHours;
-                            denomFallback = Math.round(denomFallback*10)/10;
-                            return { numerator: 1, denominator: denomFallback, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 1 };
-                        }
-                    } else {
-                        let denom = totalHoursCalc / remainingHours;
-                        denom = Math.round(denom*10)/10;
-                        return { numerator: 1, denominator: denom, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false, stage: 1 };
-                    }
+                    const legacy = computeLegacyFraction(remainingRatio, totalHoursCalc, remainingHours);
+                    return { ...legacy, elapsedHours, remainingHours, totalHours: totalHoursCalc, ratio: remainingRatio, useDays, unitLabel, isComplete: false };
                 }
             }
 
@@ -725,10 +793,16 @@
                 const { numerator, denominator, elapsedHours, remainingHours, totalHours, ratio, useDays, unitLabel, isComplete, stage } = result;
                 numeratorEl.textContent = String(numerator);
 
-                // 分母显示：若为整数则显示整数，否则一位小数
-                const denStr = typeof denominator === 'number' ?
-                    (Number.isInteger(denominator) ? String(denominator) : denominator.toFixed(1)) :
-                    String(denominator);
+                let denStr;
+                if (typeof denominator === 'number') {
+                    if (fractionMode === 'legacy') {
+                        denStr = denominator.toFixed(1);
+                    } else {
+                        denStr = Number.isInteger(denominator) ? String(denominator) : denominator.toFixed(1);
+                    }
+                } else {
+                    denStr = String(denominator);
+                }
                 denominatorEl.textContent = denStr;
 
                 if (viewMode === 'elapsed') {
@@ -803,7 +877,7 @@
                 settingsPanel.style.left = '';
                 settingsPanel.style.top = '';
                 settingsPanel.style.right = '20px';
-                settingsPanel.style.transform = 'translateY(-50%)';
+                settingsPanel.style.transform = 'none';
             }
             function closePanel() {
                 settingsPanel.classList.remove('active');
@@ -831,6 +905,28 @@
                 applyAllSettings();
             }
 
+            // 字体切换
+            fontToggleGroup.addEventListener('click', (e) => {
+                const btn = e.target.closest('.toggle-btn');
+                if (!btn) return;
+                const value = btn.dataset.value;
+                if (value === currentFontFamily) return;
+                currentFontFamily = value;
+                if (value === 'system') customFontBlobUrl = null;
+                applyAllSettings();
+            });
+
+            // 分数逻辑切换
+            fractionModeToggleGroup.addEventListener('click', (e) => {
+                const btn = e.target.closest('.toggle-btn');
+                if (!btn) return;
+                const value = btn.dataset.value;
+                if (value === fractionMode) return;
+                fractionMode = value;
+                applyAllSettings();
+            });
+
+            // 点击圆圈切换视角
             fractionWrapper.addEventListener('click', (e) => {
                 if (settingsPanel.classList.contains('active')) return;
                 viewMode = viewMode === 'elapsed' ? 'remaining' : 'elapsed';
@@ -857,23 +953,7 @@
             startInput.addEventListener('change', updateFromInputs);
             endInput.addEventListener('change', updateFromInputs);
 
-            fontSelect.addEventListener('change', ()=>{
-                const val = fontSelect.value;
-                currentFontFamily = val;
-                if (val === 'custom') {
-                    customFontWrapper.style.display = 'flex';
-                } else {
-                    customFontWrapper.style.display = 'none';
-                    customFontBlobUrl = null;
-                    currentFontFamily = 'system';
-                    applyAllSettings();
-                }
-                if (val === 'system') applyAllSettings();
-            });
-
-            chooseFontBtn.addEventListener('click', ()=>{
-                fontFileInput.click();
-            });
+            chooseFontBtn.addEventListener('click', ()=> fontFileInput.click());
             fontFileInput.addEventListener('change', async (e)=>{
                 const file = e.target.files[0];
                 if (!file) return;
@@ -890,18 +970,10 @@
                 currentWeight = parseInt(weightInput.value,10)||400;
                 applyAllSettings();
             });
-
             offsetInput.addEventListener('input', ()=>{
                 currentOffset = parseInt(offsetInput.value,10)||0;
                 applyAllSettings();
             });
-
-            fractionModeSelect.addEventListener('change', ()=>{
-                fractionMode = fractionModeSelect.value;
-                maxDenomWrapper.style.display = fractionMode === 'bestFraction' ? 'block' : 'none';
-                applyAllSettings();
-            });
-
             maxDenomInput.addEventListener('input', ()=>{
                 let val = parseInt(maxDenomInput.value,10);
                 if (isNaN(val) || val < 2) val = 2;
@@ -932,7 +1004,7 @@
                     currentWeight = 400;
                     currentOffset = 0;
                     viewMode = 'elapsed';
-                    fractionMode = 'legacy';
+                    fractionMode = 'bestFraction';
                     maxDenom = 10;
                     updateCalculatedValues();
                     applyFontAndOffset();
@@ -953,9 +1025,10 @@
                 if (e.key==='Escape' && settingsPanel.classList.contains('active')) closePanel();
             });
 
+            // 拖动逻辑
             let isDragging = false, startX, startY, initialLeft, initialTop;
             settingsPanel.addEventListener('mousedown', (e)=>{
-                if (e.target.closest('input, select, button')) return;
+                if (e.target.closest('input, button, .toggle-btn')) return;
                 e.preventDefault();
                 const rect = settingsPanel.getBoundingClientRect();
                 startX = e.clientX;
