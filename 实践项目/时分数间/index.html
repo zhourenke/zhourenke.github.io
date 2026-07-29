@@ -280,7 +280,7 @@
 
         .file-input-wrapper {
             display: flex;
-            align-items: flex-start;
+            align-items: center;
             gap: 0.4rem;
             margin-bottom: 0.8rem;
         }
@@ -309,7 +309,6 @@
         .font-hint-text {
             font-size: 0.65rem;
             color: var(--text-dim);
-            margin-top: 0.5rem;
         }
 
         .error-msg {
@@ -364,15 +363,20 @@
             display: block;
         }
 
-        #customFontWrapper,
-        #maxDenomWrapper {
-            max-height: 0;
-            overflow: clip;
+        #customFontWrapper {
+            display: none;
             margin-bottom: 0;
         }
-        #customFontWrapper.active,
+        #customFontWrapper.active {
+            display: flex;
+            margin-bottom: 0.8rem;
+        }
+        #maxDenomWrapper {
+            display: none;
+            margin-bottom: 0;
+        }
         #maxDenomWrapper.active {
-            max-height: 120px;
+            display: block;
             margin-bottom: 0.8rem;
         }
 
