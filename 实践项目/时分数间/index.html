@@ -476,10 +476,10 @@
         </div>
         <div class="custom-font-name" id="customFontName"></div>
 
-        <label>分数字体字重</label>
+        <label>分数数字字重</label>
         <input type="number" id="weightInput" min="100" max="900" step="100" value="400">
 
-        <label>分数字体垂直偏移 (px)</label>
+        <label>分数数字垂直偏移（像素）</label>
         <input type="number" id="offsetInput" value="0" step="1" min="-50" max="50">
 
         <div class="precision-header">
@@ -529,7 +529,7 @@
 
             // 状态变量
             let startTimestamp, endTimestamp, totalHours, useDays, totalUnits, unitLabel;
-            let animationFrameId;
+            let intervalId;
             let currentFontFamily = 'system';
             let customFontBlobUrl = null;
             let currentWeight = 400;
@@ -863,11 +863,11 @@
 
             function tick() {
                 updateDisplay(computeFraction());
-                animationFrameId = requestAnimationFrame(tick);
             }
             function startTicking() {
-                if(animationFrameId) cancelAnimationFrame(animationFrameId);
+                if (intervalId) clearInterval(intervalId);
                 tick();
+                intervalId = setInterval(tick, 1000);
             }
 
             function openPanel() {
@@ -1093,9 +1093,12 @@
                 startTicking();
             }
 
-            document.addEventListener('visibilitychange', ()=>{
-                if (document.hidden) { if(animationFrameId) cancelAnimationFrame(animationFrameId); }
-                else startTicking();
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden) {
+                    if (intervalId) { clearInterval(intervalId); intervalId = null; }
+                } else {
+                    startTicking();
+                }
             });
 
             boot();
